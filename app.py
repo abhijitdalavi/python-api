@@ -7,8 +7,6 @@ import os
 from flask import Flask
 from flask import request
 from flask import make_response
-from textblob import TextBlob
-from bs4 import BeautifulSoup
 import requests
 
 # Flask app should start in global layout
@@ -19,8 +17,8 @@ app = Flask(__name__)
 def webhook():
     req = request.get_json(silent=True, force=True)
 
-    print("Request:")
-    print(json.dumps(req, indent=4))
+    # print("Request:")
+    # print(json.dumps(req, indent=4))
 
     res = processRequest(req)
 
@@ -32,27 +30,22 @@ def webhook():
 
 
 def processRequest(req):
-    result = req.get("result")
-    parameters = result.get("parameters")
-    term = parameters.get("geo-city")
+    meta = req.get("queryResult")
+    term = meta.get("queryText")
 
     sentiment = 0
-    subjectivity = 0
-    url = 'https://www.google.com/search?q={0}&source=lnms&tbm=nws'.format(term)
+    subjectivity = 0.
+    url = 'https://program-o.com/v3/chat.php?say={0}'.format(term)
     response = requests.get(url)
-    soup = BeautifulSoup(response.text, 'html.parser')
-    headline_results = soup.find_all('div', class_='st')
-    for text in headline_results:
-        blob = TextBlob(text.get_text())    
-        sentiment += blob.sentiment.polarity / len(headline_results)
-        subjectivity += blob.sentiment.subjectivity / len(headline_results)
-    res = makeWebhookResult(data)
+    data_dict = json.loads(response.text)
+    res_text = data_dict["conversation"]["say"]["bot"]
+    res = makeWebhookResult(res_text)
     return res
 
 
 def makeWebhookResult(data):
 
-    speech = "Today is good"
+    speech = data
 
     print("Response:")
     print(speech)
@@ -70,4 +63,4 @@ if __name__ == '__main__':
 
     print ("Starting app on port %d" % port)
 
-    app.run(debug=False, port=port, host='0.0.0.0')
+    app.run(debug=False, port=port, host='127.0.0.1')
