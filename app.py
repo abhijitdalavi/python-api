@@ -35,7 +35,7 @@ def processRequest(req):
 
     sentiment = 0
     subjectivity = 0.
-    url = 'https://program-o.com/v3/chat.php?say={0}'.format(term)
+    url = 'http://program-o.com/v3/chat.php?say={0}'.format(term)
     response = requests.get(url)
     data_dict = json.loads(response.text)
     res_text = data_dict["conversation"]["say"]["bot"]
